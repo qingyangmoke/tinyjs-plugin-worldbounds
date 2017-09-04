@@ -2,11 +2,11 @@
   "name": "tinyjs-plugin-worldbounds",
   "version": "0.1.1",
   "author": "清扬陌客",
-  "description": "Tinyjs 九宫格图",
+  "description": "Tinyjs 系统边界",
   "keywords": [
     "tinyjs",
     "plugin",
-    "ninepatch"
+    "worldbounds"
   ],
   "repository": {
     "type": "git",
