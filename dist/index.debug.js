@@ -1,9 +1,9 @@
 /*!
- * tinyjs-plugin-ninepatch
- * Description:Tinyjs 九宫格
+ * tinyjs-plugin-worldbounds
+ * Description:Tinyjs 系统边界
  * Author: 清扬陌客
  * Version: v0.1.1
- * Github: https://github.com/qingyangmoke/tinyjs-plugin-ninepatch.git
+ * Github: https://github.com/qingyangmoke/tinyjs-plugin-worldbounds.git
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -11,9 +11,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define([], factory);
 	else if(typeof exports === 'object')
-		exports["NinePatch"] = factory();
+		exports["WorldBounds"] = factory();
 	else
-		root["Tiny"] = root["Tiny"] || {}, root["Tiny"]["NinePatch"] = factory();
+		root["Tiny"] = root["Tiny"] || {}, root["Tiny"]["WorldBounds"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -51,7 +51,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/Users/song/Develop/github/tinyjs-plugin-ninepatch/dist";
+/******/ 	__webpack_require__.p = "/Users/song/Develop/github/tinyjs-plugin-worldbounds/dist";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -73,22 +73,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.Sprite = undefined;
+	exports.CircleBoundController = undefined;
 
-	var _Sprite = __webpack_require__(2);
+	var _CircleBoundController = __webpack_require__(2);
 
-	var _Sprite2 = _interopRequireDefault(_Sprite);
+	var _CircleBoundController2 = _interopRequireDefault(_CircleBoundController);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	exports.Sprite = _Sprite2.default; /**
-	                                   * Tiny.js
-	                                   * @external Tiny
-	                                   * @see {@link http://tinyjs.net/}
-	                                   */
+	exports.CircleBoundController = _CircleBoundController2.default; /**
+	                                                                 * Tiny.js
+	                                                                 * @external Tiny
+	                                                                 * @see {@link http://tinyjs.net/}
+	                                                                 */
 
 	/**
-	 * @namespace NinePatch
+	 * @namespace WorldBounds
 	 * @memberof Tiny
 	 */
 
@@ -96,271 +96,174 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ (function(module, exports) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	/**
+	 * 辅助类 - 圆形边界控制器 目前只支持圆形物体
+	 * @author 采东<fusheng.sfs@antfin.com>
+	 * @param {number} x - 边界的圆心x坐标
+	 * @param {number} y - 边界的圆心y坐标
+	 * @param {number} radius - 边界的圆半径
+	 * @param {number} borderThickness - 边框的厚度 为了效果更加真实 增加一个边缘厚度 这样小球和最边缘会保持一个厚度的距离 类似玻璃杯 外壁也是有厚度的 看来效果更舒服
+	 * @param {number} maxVelcity - 小球运动的最大速度
+	 */
+	var CircleBoundController = function CircleBoundController(x, y, radius, borderThickness, maxVelcity) {
+	  this.x = x;
+	  this.y = y;
+	  this.left = x - radius;
+	  this.right = x + radius;
+	  this.top = y - radius;
+	  this.bottom = y + radius;
+	  this.maxVelcity = maxVelcity;
+	  this.borderThickness = borderThickness;
+	  this.originRadius = radius;
+	  this.radius = radius - borderThickness;
+	  this.balls = [];
+	};
 
 	/**
-	 * 九宫格的概念 参考了白鹭的文档 http://developer.egret.com/cn/2d/bitmapTexture/scale9Grid
-	 * 九宫格位置  scale9Grid=[30,31,50,41] 则表示的含义为 [30：区域1 的宽度值， 31：区域1 的高度值， 40：区域2 的宽度值 ，41：区域4 的高度值]
-	 *     ------------—
-	 *      | 1 | 2 | 3 |
-	 *      -------------
-	 *      | 4 | 5 | 6 |
-	 *      -------------
-	 *      | 7 | 8 | 9 |
-	 *      -------------
-	 * @class Sprite
-	 * @constructor
-	 * @memberof Tiny.NinePatch
-	 * @extends Tiny.Sprite
+	 * 获取小球的x坐标
 	 */
-	var Sprite = function (_Tiny$Sprite) {
-	  _inherits(Sprite, _Tiny$Sprite);
+	CircleBoundController.prototype.getX = function (a) {
+	  return a.body.x;
+	};
 
-	  /**
-	  * @constructor
-	  * @param {Tiny.BaseTexture} texture - 九宫格纹理
-	  * @param {number} width - 宽度
-	  * @param {number} height - 高度
-	  * @param {Array<Number>} scale9Grid - 九宫格定义
-	  */
-	  function Sprite(texture, width, height, scale9Grid) {
-	    _classCallCheck(this, Sprite);
+	/**
+	 * 获取小球的y坐标
+	 */
+	CircleBoundController.prototype.getY = function (a) {
+	  return a.body.y;
+	};
 
-	    /*
-	        九宫格的概念 参考了白鹭的文档 http://developer.egret.com/cn/2d/bitmapTexture/scale9Grid
-	        九宫格位置  scale9Grid=[30,31,50,41] 则表示的含义为 [30：区域1 的宽度值， 31：区域1 的高度值， 40：区域2 的宽度值 ，41：区域4 的高度值]
-	        ------------—
-	        | 1 | 2 | 3 |
-	        -------------
-	        | 4 | 5 | 6 |
-	        -------------
-	        | 7 | 8 | 9 |
-	        -------------
-	    */
+	/**
+	 * 添加小球
+	 */
+	CircleBoundController.prototype.addBall = function (ball) {
+	  this.balls.push(ball);
+	};
 
-	    var _this = _possibleConstructorReturn(this, (Sprite.__proto__ || Object.getPrototypeOf(Sprite)).call(this));
-
-	    _this.baseTexture = texture;
-
-	    /**
-	     * @private
-	     * @default 0
-	     */
-	    _this._loaded = 0;
-
-	    /**
-	     * 存储九宫格纹理
-	     * @private
-	     */
-	    _this._textures = [];
-
-	    /**
-	     * 存储九宫格sprite对象
-	     * @private
-	     */
-	    _this._gridSprites = [];
-
-	    if (width === undefined) {
-	      width = _this.baseTexture.width;
-	    }
-
-	    if (height === undefined) {
-	      height = _this.baseTexture.height;
-	    }
-
-	    /**
-	    * 真实宽度
-	    * @private
-	    */
-	    _this._targetWidth = width;
-
-	    /**
-	    * 真实高度
-	    * @private
-	    */
-	    _this._targetHeight = height;
-
-	    var w1 = scale9Grid[0];
-	    var w2 = scale9Grid[2];
-	    var w3 = _this.baseTexture.width - w1 - w2;
-
-	    var h1 = scale9Grid[1];
-	    var h2 = scale9Grid[3];
-	    var h3 = _this.baseTexture.height - h1 - h2;
-
-	    var wArr = [w1, w2, w3];
-	    var xArr = [0, w1, w1 + w2];
-
-	    var hArr = [h1, h2, h3];
-	    var yArr = [0, h1, h1 + h2];
-
-	    var rectFrames = [];
-	    for (var row = 0; row < 3; row++) {
-	      for (var col = 0; col < 3; col++) {
-	        var rect = new Tiny.Rectangle(xArr[col], yArr[row], wArr[col], hArr[row]);
-	        rectFrames.push(rect);
-	      }
-	    }
-
-	    var orig = new Tiny.Rectangle(0, 0, _this.baseTexture.width, _this.baseTexture.height);
-	    var trim = null;
-	    for (var i = 0; i < 9; i++) {
-	      var frame = rectFrames[i];
-	      var t = new Tiny.Texture(_this.baseTexture, frame, orig, trim, 0);
-	      _this._textures.push(t);
-	      var child = new Tiny.Sprite(t);
-	      _this._gridSprites.push(child);
-	      child.x = frame.x;
-	      child.y = frame.y;
-	      child.width = frame.width;
-	      child.height = frame.height;
-	      _this.addChild(child);
-	      _this._loaded++;
-	    }
-
-	    _this._update();
-	    return _this;
+	/**
+	 * 删除小球
+	 */
+	CircleBoundController.prototype.removeBall = function (ball) {
+	  var index = this.balls.indexOf(ball);
+	  if (index > -1) {
+	    this.balls.splice(index, 1);
 	  }
+	};
 
-	  /**
-	  * @name Tiny.NinePatch.Sprite#width
-	  * @property {number} width - 宽度
-	  */
+	/**
+	 * 清空小球
+	 */
+	CircleBoundController.prototype.clear = function () {
+	  this.balls.length = 0;
+	};
 
+	/**
+	 * 判断小球是否在以圆心为原点的x轴上
+	 */
+	CircleBoundController.prototype.inXaxis = function (ball) {
+	  return this.getX(ball) === this.x;
+	};
 
-	  _createClass(Sprite, [{
-	    key: 'resize',
+	/**
+	 * 判断小球是否在以圆心为原点的y轴上
+	 */
+	CircleBoundController.prototype.inYaxis = function (ball) {
+	  return this.getY(ball) === this.y;
+	};
 
+	/**
+	 * 获取小球和圆心的角度
+	 */
+	CircleBoundController.prototype.getAngle = function (e) {
+	  return Tiny.Physics.P2.Math.wrapAngle(Tiny.Physics.P2.Math.angle(this.x, this.y, this.getX(e), this.getY(e)), true);
+	};
 
-	    /**
-	    * 改变尺寸
-	    * @private
-	    * @method Tiny.NinePatch.Sprite#resize
-	    * @param {number} width 宽度
-	    * @param {number} height 高度
-	    */
-	    value: function resize(width, height) {
-	      this._update(width, height);
+	/**
+	 * 获取小球当前角度在圆形边界的最大边界位置
+	 */
+	CircleBoundController.prototype.getMaxPointFromBall = function (e) {
+	  var radius = this.radius - e.width / 2;
+	  // // 根据角度计算最大距离
+	  var angle = this.getAngle(e);
+	  return this.getMaxPoint(angle, radius);
+	};
+
+	/**
+	 * 根据角度计算半径为radius圆形边界的最大边界位置
+	 */
+	CircleBoundController.prototype.getMaxPoint = function (angle, radius) {
+	  var x0 = 0;
+	  var y0 = 0;
+	  if (angle == 0) {
+	    x0 = radius;
+	    y0 = 0;
+	  } else if (angle == Math.PI / 2) {
+	    x0 = 0;
+	    y0 = radius;
+	  } else if (angle == Math.PI) {
+	    x0 = -radius;
+	    y0 = 0;
+	  } else if (angle == -Math.PI / 2) {
+	    x0 = 0;
+	    y0 = -radius;
+	  } else {
+	    x0 = radius * Math.cos(angle);
+	    y0 = radius * Math.sin(angle);
+	  }
+	  var x1 = this.x + x0;
+	  var y1 = this.y + y0;
+	  return {
+	    x: x1,
+	    y: y1
+	  };
+	};
+
+	/**
+	 * 判断小球是否在圆形边界内
+	 */
+	CircleBoundController.prototype.inBound = function (e) {
+	  var distance = Math.abs(Tiny.Physics.P2.Math.distance(this.getX(e), this.getY(e), this.x, this.y));
+	  if (distance <= this.radius - e.width / 2) {
+	    return true;
+	  }
+	  return false;
+	};
+
+	/**
+	 * 更新 需要在每次刷新的时候主动调用 建议加到 app.onUpdate() 中执行;
+	 */
+	CircleBoundController.prototype.update = function () {
+	  var _this = this;
+	  this.balls.forEach(function (e, i) {
+	    if (!_this.inBound(e)) {
+	      var maxPoint = _this.getMaxPointFromBall(e);
+	      var x = _this.getX(e);
+	      var y = _this.getY(e);
+	      if (maxPoint.x < _this.x && x < maxPoint.x || maxPoint.x > _this.x && x > maxPoint.x) {
+	        e.position.x = maxPoint.x;
+	        e.body.x = e.position.x;
+	        e.body.velocity.x *= -1;
+	      }
+
+	      if (y < _this.y && y < maxPoint.y || y > _this.y && y > maxPoint.y) {
+	        e.position.y = maxPoint.y;
+	        e.body.y = e.position.y;
+	        e.body.velocity.y *= -1;
+	      }
 	    }
 
-	    /**
-	     * 更新
-	     * @private
-	     * @method Tiny.NinePatch.Sprite#update
-	     * @param {number} [width=null]
-	     * @param {number} [height=null]
-	     */
+	    e.body.velocity.x = Tiny.Physics.P2.Math.wrap(e.body.velocity.x, -_this.maxVelcity, _this.maxVelcity);
+	    e.body.velocity.y = Tiny.Physics.P2.Math.wrap(e.body.velocity.y, -_this.maxVelcity, _this.maxVelcity);
+	  });
+	};
 
-	  }, {
-	    key: '_update',
-	    value: function _update(width, height) {
-	      // 更新宽度 如果需要的话
-	      if (width !== undefined) {
-	        this._targetWidth = width;
-	      }
-
-	      // 更新高度 如果需要的话
-	      if (height !== undefined) {
-	        this._targetHeight = height;
-	      }
-
-	      // 容错
-	      if (this._targetWidth < this.baseTexture.width || this._targetHeight < this.baseTexture.height) {
-	        throw Error('九宫格尺寸设置错误，尺寸不能小于素材尺寸');
-	      }
-
-	      if (this._loaded !== 9) return;
-
-	      var child = void 0;
-
-	      // 九宫格位置2 顶部中间 top middle
-	      child = this._gridSprites[1];
-	      child.position.set(this.children[0].width, 0);
-	      child.width = this._targetWidth - child.x - this.children[2].width;
-
-	      // 九宫格位置 3 顶部右上角
-	      child = this._gridSprites[2];
-	      child.position.set(this._targetWidth - child.width, 0);
-
-	      // 九宫格位置4 中间左侧
-	      child = this._gridSprites[3];
-	      child.position.set(0, this.children[0].height);
-	      child.height = this._targetHeight - child.y - this.children[6].height;
-
-	      // 九宫格位置5 正中间
-	      child = this._gridSprites[4];
-	      child.position.set(this.children[1].x, this.children[3].y);
-	      child.height = this.children[3].height;
-	      child.width = this.children[1].width;
-
-	      // 九宫格位置6 中间右侧
-	      child = this._gridSprites[5];
-	      child.position.set(this._targetWidth - child.width, this.children[3].y);
-	      child.height = this.children[3].height;
-
-	      // 九宫格位置7 底部左侧
-	      child = this._gridSprites[6];
-	      child.position.set(0, this._targetHeight - child.height);
-
-	      // 九宫格位置8 底部中间
-	      child = this._gridSprites[7];
-	      child.position.set(this.children[1].x, this._targetHeight - child.height);
-	      child.width = this.children[1].width;
-
-	      // 九宫格位置9 底部右侧
-	      child = this._gridSprites[8];
-	      child.position.set(this._targetWidth - child.width, this._targetHeight - child.height);
-
-	      // this.dispatch('updated');
-	    }
-	  }, {
-	    key: 'width',
-	    get: function get() {
-	      return this._targetWidth;
-	    },
-	    set: function set(value) {
-	      if (this._targetWidth < this.baseTexture.width) {
-	        throw Error('九宫格尺寸设置错误，尺寸不能小于素材尺寸');
-	      }
-	      this._targetWidth = value;
-	      this._update();
-	    }
-
-	    /**
-	    * @name Tiny.NinePatch.Sprite#height
-	    * @property {number} height - 高度
-	    */
-
-	  }, {
-	    key: 'height',
-	    get: function get() {
-	      return this._targetHeight;
-	    },
-	    set: function set(value) {
-	      if (this._targetHeight < this.baseTexture.height) {
-	        throw Error('九宫格尺寸设置错误，尺寸不能小于素材尺寸');
-	      }
-	      this._targetHeight = value;
-	      this._update();
-	    }
-	  }]);
-
-	  return Sprite;
-	}(Tiny.Sprite);
-
-	exports.default = Sprite;
+	exports.default = CircleBoundController;
 
 /***/ })
 /******/ ])

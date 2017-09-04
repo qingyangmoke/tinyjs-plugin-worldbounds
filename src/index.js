@@ -5,12 +5,12 @@
 */
 
 /**
- * @namespace NinePatch
+ * @namespace WorldBounds
  * @memberof Tiny
  */
 
-import Sprite from './Sprite';
+import CircleBoundController from './CircleBoundController';
 
 export {
-  Sprite,
+  CircleBoundController,
 };

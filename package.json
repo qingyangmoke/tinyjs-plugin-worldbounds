@@ -1,5 +1,5 @@
 {
-  "name": "tinyjs-plugin-ninepatch",
+  "name": "tinyjs-plugin-worldbounds",
   "version": "0.1.1",
   "author": "清扬陌客",
   "description": "Tinyjs 九宫格图",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alipay-inc.com:tiny-plugins/tinyjs-plugin-ninepatch.git"
+    "url": "git@gitlab.alipay-inc.com:tiny-plugins/tinyjs-plugin-worldbounds.git"
   },
   "main": "dist/index.js",
   "files": [
@@ -48,7 +48,7 @@
     "webpack-merge": "~0.15.0"
   },
   "bugs": {
-    "url": "https://github.com/qingyangmoke/tinyjs-plugin-ninepatch/issues"
+    "url": "https://github.com/qingyangmoke/tinyjs-plugin-worldbounds/issues"
   },
-  "homepage": "https://github.com/qingyangmoke/tinyjs-plugin-ninepatch#readme"
+  "homepage": "https://github.com/qingyangmoke/tinyjs-plugin-worldbounds#readme"
 }

@@ -3,16 +3,16 @@ const merge = require('webpack-merge');
 const webpack = require('webpack');
 const pkg = require('../package.json');
 
-const banner = `tinyjs-plugin-ninepatch
-Description:Tinyjs 九宫格
+const banner = `tinyjs-plugin-worldbounds
+Description:Tinyjs 系统边界
 Author: ${pkg.author}
 Version: v${pkg.version}
-Github: https://github.com/qingyangmoke/tinyjs-plugin-ninepatch.git`
+Github: https://github.com/qingyangmoke/tinyjs-plugin-worldbounds.git`
 ;
 
 const config = {
   entry: {
-    'NinePatch': [path.resolve(__dirname, '../src/index.js')]
+    'WorldBounds': [path.resolve(__dirname, '../src/index.js')]
   },
   output: {
     path: path.resolve(__dirname, '../dist'),

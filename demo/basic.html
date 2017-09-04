@@ -1,97 +1,168 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <title>测试</title>
   <meta charset="utf-8">
-  <title>tinyjs - 九宫格</title>
-  <meta content="yes" name="apple-mobile-web-app-capable" />
-  <meta content="yes" name="apple-touch-fullscreen" />
-  <meta content="telephone=no,email=no" name="format-detection" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <!-- tiny 基础库 -->
   <script src="https://gw.alipayobjects.com/as/g/tiny/tiny/1.1.4/tiny.js"></script>
+  <script src="https://gw.alipayobjects.com/as/g/tiny-plugins/tinyjs-plugin-p2/0.0.3/index.js"></script>
   <script src="../dist/index.debug.js"></script>
-  <style>
-    html,
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=2,minimum-scale=1,user-scalable=1">
+  <style type="text/css">
     body,
-    p,
-    div {
-      margin: 0;
+    html,
+    canvas {
       padding: 0;
+      margin: 0;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
     }
   </style>
 </head>
 
 <body>
-  <script type="text/javascript">
+
+  <script>
     var config = {
-      showFPS: false, // 显示帧频
+      showFPS: true, // 显示帧频
       dpi: 1, // 分辨率
       renderOptions: {
         backgroundColor: 0x2a3145 // 画布背景色
       }
     };
 
-    function setTitle(title, container) {
-      var title = new Tiny.Text(title, {
+    var app = new Tiny.Application(config);
+    Tiny.Physics.P2.startSystem(app, {
+      gravity: [0, 0]
+    });
+
+    //  设置回弹系数 增加小人落到地上的回跳效果
+    app.physics.p2.restitution = 2.8;
+
+    /**
+     * 辅助函数 - 创建一个圆形纯色对象
+     * @param {Tiny.Application} app
+     * @param {number} radius - 半径
+     * @param {number} color - 颜色
+     */
+    function createCircleSprite(app, radius, color) {
+      var graphics = new Tiny.Graphics();
+      graphics.beginFill(color);
+      graphics.drawCircle(radius, radius, radius);
+      graphics.bounds = new Tiny.Rectangle(0, 0, radius * 2, radius * 2);
+      var rt = Tiny.RenderTexture.create(radius * 2, radius * 2);
+      app.renderer.render(graphics, rt);
+      return new Tiny.Sprite(rt);
+    }
+
+    /**
+     * 辅助函数 - 创建一个带文本和纯色背景的按钮
+     * @param {Tiny.Application} app
+     * @param {string} name - 按钮的文本
+     * @param {number} x - x坐标
+     * @param {number} y - y坐标
+     * @param {number} width - 宽度
+     * @param {number} height - 高度
+     * @param {number} color - 按钮背景颜色
+     * @param {function} onclick - 按钮的点击事件
+     */
+    function createButton(app, name, x, y, width, height, color, onclick) {
+      let graphics = new Tiny.Graphics();
+      graphics.beginFill(color);
+      graphics.drawRect(0, 0, width, height);
+      graphics.bounds = new Tiny.Rectangle(0, 0, width, height);
+      var rt = Tiny.RenderTexture.create(width, height);
+      app.renderer.render(graphics, rt);
+      let sprite = new Tiny.Sprite(rt);
+      var title = new Tiny.Text(name, {
         fontSize: '18px',
         fill: 'white',
       });
+      title.position.set(sprite.width / 2, sprite.height / 2);
+      title.anchor.set(0.5, 0.5);
+      sprite.addChild(title);
+      sprite.position.set(x, y);
 
-      title.position.set(Tiny.WIN_SIZE.width / 2, 30);
-      title.anchor.set(0.5, 0);
-      container.addChild(title);
+      sprite.setEventEnabled(true);
+
+      sprite.on('pointerdown', function (data) {
+        onclick(data);
+      });
+
+      return sprite;
     }
 
-    var app = new Tiny.Application(config);
+    /**
+     * 辅助函数 - 获取随机颜色
+     */
+    function getRandomColor() {
+      return 0x1000000 + Math.random() * 0x1000000;
+    }
 
-    function initGame() {
+    function init() {
       container = new Tiny.Container();
+      var smallBallContainer = new Tiny.Container();
+      container.addChild(smallBallContainer);
 
-      setTitle('tinyjs - 九宫格', container);
+      const smallCircleRadius = 10;
+      const bigCircleRadius = 150;
+      const realCircleRadius = bigCircleRadius - smallCircleRadius;
+      var sprites = [];
+      // => START 创建定时器，用于逐个创建圆形运动的小球
+      var ticker = new Tiny.ticker.Ticker();
+      ticker.countDown({
+        // 每200毫秒执行一次
+        duration: 10,
+        // 执行 loopTimes 次
+        times: 20,
+        callback: () => {
+          var sprite = createCircleSprite(app, smallCircleRadius, getRandomColor());
+          sprite.position.x = Tiny.WIN_SIZE.width / 2;
+          sprite.position.y = Tiny.WIN_SIZE.height / 2 + bigCircleRadius - smallCircleRadius;
 
-      sprite1 = new Tiny.Sprite(Tiny.Loader.resources['rect'].texture);
-      sprite1.x = 100;
-      sprite1.y = 100;
-      container.addChild(sprite1);
+          app.physics.p2.enable(sprite, false);
+          sprite.body.mass = 1;
+          sprite.body.setCircle(smallCircleRadius);
 
-      sprite = new Tiny.NinePatch.Sprite(
-        Tiny.Loader.resources['rect'].texture,
-        100,
-        100,
-        [30, 31, 40, 41]
-      );
-      sprite.x = 100;
-      sprite.y = 300;
-      container.addChild(sprite);
+          sprite.body.velocity.y = -300;
+          sprite.body.velocity.x = Math.floor(Math.random() * 300) * (Math.random() > 0.5 ? -1 : 1);
 
+          smallBallContainer.addChild(sprite);
+          sprites.push(sprite);
+          control.addBall(sprite);
+        }
+      });
+
+
+      let bigCircle = new Tiny.Sprite(Tiny.Loader.resources['bigCircle'].texture);
+      bigCircle.position.x = Tiny.WIN_SIZE.width / 2;
+      bigCircle.position.y = Tiny.WIN_SIZE.height / 2;
+      bigCircle.anchor.set(0.5, 0.5);
+      container.addChild(bigCircle);
 
       app.run(container);
 
-      var yoyo = false;
-      setInterval(function () {
-        if (sprite.width == 200) {
-          yoyo = true;
-        } else if (sprite.width == 100) {
-          yoyo = false;
-        }
+      var btnFall = createButton(app, '开始', 0, 20, 100, 30, 0xff0000, function () {
+        btnFall.visible = false;
+        ticker.start();
+      });
+      container.addChild(btnFall);
 
-        if (yoyo) {
-          sprite.width--;
-          sprite.height--;
-        } else {
-          sprite.width++;
-          sprite.height++;
-        }
-      }, 1000 / 60);
+      const maxVelcity = 800;
+      var control = new Tiny.WorldBounds.CircleBoundController(bigCircle.position.x, bigCircle.position.y, bigCircleRadius, 5, maxVelcity);
+      window.control = control;
+      app.onUpdate(function () {
+        control.update();
+      }, true);
+
+      app.stageDebugLayer && app.stageDebugLayer.setScale(app.stage.scale.x, app.stage.scale.y);
     }
 
-
     Tiny.Loader
-      .add('rect', 'assets/rect.png')
+      .add('bigCircle', 'assets/big-circle.png')
       .load(function () {
-        initGame();
+        init();
       });
-    console.log(Tiny.NinePatch);
   </script>
 </body>
 
